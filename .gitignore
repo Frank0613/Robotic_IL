@@ -121,3 +121,10 @@ venv.bak/
 
 # private macros
 macros_private.py
+
+# real-robot project artifacts: generated/downloaded, too large for git
+# (datasets/ has hdf5 files up to 8.5GB; train/ is the train.output_dir configs
+# write checkpoints/logs into -- *.pth above already covers the checkpoints,
+# this also drops the tensorboard/log clutter under each run)
+datasets/
+train/

@@ -1,0 +1,4 @@
+====== Mujoco can't display problem ======
+
+export DISPLAY=:1
+export MUJOCO_GL=glfw

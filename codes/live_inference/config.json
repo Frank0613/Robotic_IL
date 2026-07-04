@@ -1,0 +1,10 @@
+{
+    "ckpt": "train/rsm_fan_lift_dp_delta_256/20260613201942/models/model_epoch_300.pth",
+    "device": null,
+    "depth_max": 1000.0,
+    "joint_topic": "/left_arm/joint_states",
+    "rgb_topic": "/camera_L/color/image_raw/compressed",
+    "depth_topic": "/camera_L/depth/aligned_depth_to_color",
+    "action_topic": "/delta_action",
+    "rate": 10.0
+}
