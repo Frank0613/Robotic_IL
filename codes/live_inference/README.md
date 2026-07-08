@@ -9,14 +9,16 @@ to set up `robomimic_env`).
 
 ## Files
 
-- `run.py`      — entry point: argparse + rclpy init/spin/shutdown (**run this**)
-- `ros_node.py` — the `LiveInterface(Node)` class: subscriptions, publisher, the inference tick
-- `policy.py`   — `PolicyRunner`: loads the checkpoint, owns the causal obs window, runs one inference step
-- `sensors.py`  — decode/resize/normalize raw ROS payloads (RGB, depth) into what the policy expects
-- `config.py`   — loads `config.json`
-- `config.json` — **edit this** to change the checkpoint path, topic names, depth_max, or rate
+- `run.py`       — entry point: argparse + rclpy init/spin/shutdown (**run this to deploy**)
+- `status_gui.py`— entry point: same wiring as `run.py` **plus a CV2 status dashboard** (run this to watch/test)
+- `ros_node.py`  — the `LiveInterface(Node)` class: subscriptions, publisher, the inference tick
+- `policy.py`    — `PolicyRunner`: loads the checkpoint, owns the causal obs window, runs one inference step
+- `sensors.py`   — decode/resize/normalize raw ROS payloads (RGB, depth) into what the policy expects
+- `config.py`    — loads `config.json`
+- `config.json`  — **edit this** to change the checkpoint path, topic names, depth_max, or rate
+- `fake_sensors.py` — test-only: publishes fake joint/rgb/depth so you can run the whole pipeline **without a robot**
 
-Dependency direction: `run.py` → `ros_node.py` → `policy.py` → `sensors.py`.
+Dependency direction: `run.py` / `status_gui.py` → `ros_node.py` → `policy.py` → `sensors.py`.
 `policy.py` also reaches up to `../model_utils.py` (shared with
 `codes/norobot_eval/`) for the actual checkpoint-loading call.
 
@@ -34,6 +36,54 @@ conda run -n robomimic_env python codes/live_inference/run.py
 
 It logs a line every 10 frames (`frame N: action=[...] (x.x ms)`). `Ctrl+C`
 to stop. To change the model or any topic, edit `config.json` and restart.
+
+## Status UI (`status_gui.py`)
+
+`status_gui.py` does exactly what `run.py` does (loads the model, subscribes to
+the three topics, publishes `/delta_action`) **plus** opens a small OpenCV
+window so you can see, at a glance, whether the pipeline is healthy:
+
+- **stage** — one line showing the current phase (`loading model` → `running`)
+- **MODEL** — green once loaded (with `To/Ta/Tp/ac_dim` and the image sizes)
+- **three SUB rows** — one green/yellow/red dot per input topic + its incoming
+  Hz (red `WAITING` = nothing arriving on that topic yet)
+- **PUB action** — green while `/delta_action` is being published, with the
+  publish count and the last delta vector
+- a scrolling **log** panel, and live **rgb/depth thumbnails** so you can
+  confirm real frames are flowing (not just that a message arrived)
+
+```bash
+source /opt/ros/jazzy/setup.bash
+conda run -n robomimic_env python codes/live_inference/status_gui.py
+```
+
+Same flags as `run.py`. Press **`q`** / **`Esc`** (or close the window) to quit;
+`Ctrl+C` in the terminal also exits cleanly. It needs a graphical display
+(`$DISPLAY`); over plain SSH without X11 forwarding the window can't open, but
+the same log is printed to the terminal (or just use `run.py`).
+
+## Testing without a robot
+
+You don't need the arm (or even the checkpoint's dataset) to test the whole
+loop — `fake_sensors.py` publishes random joint/rgb/depth on the configured
+topics, so the interface has something to subscribe to. Run it in one terminal
+and the interface in another (both need ROS2 sourced):
+
+```bash
+# terminal 1 — fake robot: publishes the 3 input topics + logs /delta_action back
+source /opt/ros/jazzy/setup.bash
+conda run -n robomimic_env python codes/live_inference/fake_sensors.py
+
+# terminal 2 — the interface, with the status UI
+source /opt/ros/jazzy/setup.bash
+conda run -n robomimic_env python codes/live_inference/status_gui.py
+```
+
+Expected: in the UI all three SUB dots go green (~10 Hz), MODEL is green, and
+PUB `action` turns green with a rising count; in terminal 1 `fake_sensors`
+logs `<- N actions received`, confirming the loop closes end to end. (Swap
+`status_gui.py` for `run.py` to test headless.) `fake_sensors.py` reads the
+same `config.json`, so if you change topic names there both sides stay in sync.
 
 ## Topics / messages
 

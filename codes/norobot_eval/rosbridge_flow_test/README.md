@@ -54,10 +54,10 @@ way `codes/live_inference/` did. So it keeps the two-process split.
 
 ```bash
 # quick smoke (first 24 frames):
-MAX_FRAMES=24 codes/norobot_eval/rosbridge_flow_test/run_demo.sh train/rsm_fan_lift_dp_delta/<run>/last.pth demo_15 delta
+MAX_FRAMES=24 codes/norobot_eval/rosbridge_flow_test/run_demo.sh train/rsm_fan_lift_dp_delta_256/<run>/last.pth demo_15 delta
 
 # full demo:
-codes/norobot_eval/rosbridge_flow_test/run_demo.sh train/rsm_fan_lift_dp_delta/<run>/last.pth demo_15 delta
+codes/norobot_eval/rosbridge_flow_test/run_demo.sh train/rsm_fan_lift_dp_delta_256/<run>/last.pth demo_15 delta
 ```
 
 Output: per-dim MSE table + `OVERALL PASS/FAIL`, and a plot at
@@ -68,9 +68,9 @@ Output: per-dim MSE table + `OVERALL PASS/FAIL`, and a plot at
 ```bash
 # T1 — export demo + model server (robomimic_env)
 conda run -n robomimic_env python codes/norobot_eval/rosbridge_flow_test/export_demo.py \
-    --dataset datasets/rsm_robomimic_delta.hdf5 --demo demo_15 --out /tmp/ros_eval_demo.npz
+    --dataset datasets/rsm_robomimic_delta_256.hdf5 --demo demo_15 --out /tmp/ros_eval_demo.npz
 conda run -n robomimic_env python codes/norobot_eval/rosbridge_flow_test/model_server.py \
-    --ckpt train/rsm_fan_lift_dp_delta/<run>/last.pth
+    --ckpt train/rsm_fan_lift_dp_delta_256/<run>/last.pth
 
 # T2 — policy bridge (ROS2, system py3.12)
 source /opt/ros/jazzy/setup.bash

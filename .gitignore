@@ -128,3 +128,5 @@ macros_private.py
 # this also drops the tensorboard/log clutter under each run)
 datasets/
 train/
+
+*.zip
