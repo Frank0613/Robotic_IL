@@ -1,8 +1,8 @@
 {
     "algo_name": "diffusion_policy",
     "experiment": {
-        "name": "rsm_fan_lift_dp_delta",
-        "validate": true,
+        "name": "jetcobot_stack_dp_ee_delta_20261013",
+        "validate": false,
         "logging": {
             "terminal_output_to_txt": true,
             "log_tb": true,
@@ -14,12 +14,12 @@
             "every_n_seconds": null,
             "every_n_epochs": 50,
             "epochs": [],
-            "on_best_validation": true,
+            "on_best_validation": false,
             "on_best_rollout_return": false,
             "on_best_rollout_success_rate": false
         },
-        "epoch_every_n_steps": null,
-        "validation_epoch_every_n_steps": 20,
+        "epoch_every_n_steps": 81,
+        "validation_epoch_every_n_steps": 10,
         "env": null,
         "additional_envs": null,
         "render": false,
@@ -36,18 +36,18 @@
         }
     },
     "train": {
-        "data": "/home/miislab-server10/Frank/robomimic/datasets/rsm_robomimic_delta_256.hdf5",
+        "data": "/home/miislab-server10/Frank/robomimic/datasets/20261013.hdf5",
         "output_dir": "/home/miislab-server10/Frank/robomimic/train",
-        "num_data_workers": 4,
+        "num_data_workers": 16,
         "hdf5_cache_mode": "low_dim",
         "hdf5_use_swmr": true,
         "hdf5_load_next_obs": false,
         "hdf5_normalize_obs": false,
-        "hdf5_filter_key": "train",
-        "hdf5_validation_filter_key": "valid",
+        "hdf5_filter_key": null,
+        "hdf5_validation_filter_key": null,
         "seq_length": 16,
         "pad_seq_length": true,
-        "frame_stack": 1,
+        "frame_stack": 2,
         "pad_frame_stack": true,
         "dataset_keys": [
             "actions"
@@ -63,20 +63,22 @@
         "goal_mode": null,
         "cuda": true,
         "batch_size": 64,
-        "num_epochs": 600,
+        "num_epochs": 300,
         "seed": 1
     },
     "algo": {
         "optim_params": {
             "policy": {
+                "optimizer_type": "adamw",
                 "learning_rate": {
                     "initial": 0.0001,
                     "decay_factor": 0.1,
-                    "epoch_schedule": [],
-                    "scheduler_type": "multistep"
+                    "step_every_batch": true,
+                    "scheduler_type": "multistep",
+                    "epoch_schedule": []
                 },
                 "regularization": {
-                    "L2": 0.000001
+                    "L2": 1e-06
                 }
             }
         },
@@ -101,7 +103,7 @@
             "power": 0.75
         },
         "ddpm": {
-            "enabled": true,
+            "enabled": false,
             "num_train_timesteps": 100,
             "num_inference_timesteps": 100,
             "beta_schedule": "squaredcos_cap_v2",
@@ -109,13 +111,13 @@
             "prediction_type": "epsilon"
         },
         "ddim": {
-            "enabled": false,
+            "enabled": true,
             "num_train_timesteps": 100,
             "num_inference_timesteps": 10,
             "beta_schedule": "squaredcos_cap_v2",
             "clip_sample": true,
             "set_alpha_to_one": true,
-            "steps_offset": 0,
+            "steps_offset": 9,
             "prediction_type": "epsilon"
         }
     },
@@ -123,14 +125,16 @@
         "modalities": {
             "obs": {
                 "low_dim": [
-                    "joint_pos",
-                    "joint_vel"
+                    "ee_pose",
+                    "gripper",
+                    "joint_state"
                 ],
                 "rgb": [
-                    "rgb"
+                    "front_rgb",
+                    "wrist_rgb"
                 ],
                 "depth": [
-                    "depth"
+                    "front_depth"
                 ],
                 "scan": []
             },
